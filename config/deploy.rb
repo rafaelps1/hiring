@@ -1,14 +1,34 @@
 # config valid for current version and patch releases of Capistrano
 lock "~> 3.10.2"
 
-set :application, "my_app_name"
-set :repo_url, "git@example.com:me/my_repo.git"
+set :application, "hiring"
+set :repo_url, "https://github.com/rafaelps1/hiring"
 
 # Default branch is :master
 # ask :branch, `git rev-parse --abbrev-ref HEAD`.chomp
 
 # Default deploy_to directory is /var/www/my_app_name
-# set :deploy_to, "/var/www/my_app_name"
+set :deploy_to, "/var/www/hiring"
+
+desc "Check that we can access everything"
+task :check_write_permissions do
+  on roles(:all) do |host|
+    if test("[ -w #{fetch(:deploy_to)} ]")
+      info "#{fetch(:deploy_to)} is writable on #{host}"
+    else
+      error "#{fetch(:deploy_to)} is not writable on #{host}}"
+    end
+  end
+end
+
+desc "composer install"
+task :composer_install do
+  on roles(:web) do
+    within release_path do
+      execute :composer, "install --no-dev --quiet"
+    end
+  end
+end
 
 # Default value for :format is :airbrussh.
 # set :format, :airbrussh
